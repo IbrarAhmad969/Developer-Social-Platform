@@ -27,14 +27,15 @@ A scalable, modular Node.js + Express backend designed to practice real-world ar
 ### 1. Clone the repo
 
 ```bash
-git clone https://github.com/your-username/furniture-showroom-backend.git
-cd furniture-showroom-backend
+git clone https://github.com/your-username/Developer-Social_Platform.git
+cd Developer-Social_Platform
 
-```bash
+# Dependencies
 npm install
-```bash
+bash
 npm run dev
 
+#Package.json 
 "scripts": {
   "dev": "nodemon server/index.js"
 }
