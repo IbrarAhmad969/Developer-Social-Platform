@@ -6,7 +6,7 @@ function successResponse(res, data, message = "Success", statusCode = 200) {
   });
 }
 
-function errorResponse(res, message = "Something wrong", status = 500) {
+function errorResponse(res, message = "Something wrong", statusCode = 500) {
   return res.status(statusCode).json({
     status: "error",
     message,

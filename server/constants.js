@@ -1,2 +1,3 @@
-const DB_NAME = 'furniture-showroom'
-module.exports = DB_NAME
+module.exports = {
+    DB_NAME:'furniture-showroom'
+}

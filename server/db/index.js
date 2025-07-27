@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 const ApiError = require("../utils/apiError");
-const DB_NAME = require("../constants");
+const {DB_NAME} = require("../constants");
 
 const connectDB = async () => {
   try {

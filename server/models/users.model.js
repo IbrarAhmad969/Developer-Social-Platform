@@ -1,35 +1,18 @@
-const users = [
-  { id: 1, name: "Ibrar", role: "Dev" },
-  { id: 2, name: "Jane Doe", role: "Designer" },
-  { id: 3, name: "John Smith", role: "DevOps" },
-];
+const {mongoose, Schema} = require("mongoose")
 
-function getAllUsers() {
-  return Array.from(users);
-}
+const userSchema = new Schema({
 
-function createUser({ name, role }) {
-  const newUser = {
-    id: users.length + 1,
-    name,
-    role,
-  };
-  users.push(newUser);
-
-  return newUser;
-}
-
-function deleteUserById(id) {
-  const userIndex = users.findIndex((user) => user.id === id);
-  if (userIndex == -1) {
-    return false;
+  name: {
+    type: String,
+    required: [true, 'Name is Required']
+  },
+  role: {
+    type: String,
+    required: [true, "Role is Required"],
   }
-  users.splice(userIndex, 1);
-  return true;
-}
 
-module.exports = {
-  getAllUsers,
-  createUser,
-  deleteUserById,
-};
+}, {timestamps: true});
+
+const User = mongoose.model('User', userSchema);
+
+module.exports = User;

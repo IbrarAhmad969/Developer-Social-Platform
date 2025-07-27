@@ -1,10 +1,12 @@
-const { getAllUsers, createUser, deleteUserById } = require("../models/users.model");
 const { successResponse } = require("../utils/apiResponse");
+const User = require("../models/users.model");
 const ApiErrors = require("../utils/apiError");
 
-function httpGetAllUsers(req, res, next) {
+//Get Method to Get the Users. 
+
+const httpGetAllUsers = async (req, res, next) => {
   try {
-    const users = getAllUsers();
+    const users = await User.find();
 
     if (!users.length) {
       throw new ApiErrors("No users found", 404);
@@ -16,26 +18,24 @@ function httpGetAllUsers(req, res, next) {
   }
 }
 
-function httpCreateUser(req, res, next) {
+const httpCreateUser = async (req, res, next) => {
   try {
     const { name, role } = req.body;
 
-    const newUser = createUser({ name, role });
+    const newUser = await User.create({ name, role });
     return successResponse(res, newUser, "User Created Successfully ", 201);
   } catch (error) {
     next(error);
   }
 }
-function httpDeleteUserById(req, res, next) {
+const httpDeleteUserById = async (req, res, next) => {
   try {
-    const userId = +req.params.id;
+    const userId = req.params.id;
+    const deleted = await User.findByIdAndDelete(userId);
 
-    if (isNaN(userId)) {
-      throw new ApiErrors("Invalid User ID", 400);
-    }
-
-    const deleted = deleteUserById(userId);
-
+    if (!userId.match(/^[0-9a-fA-F]{24}$/)) {
+      throw new ApiErrors("Invalid User ID format", 400);
+    }  
     if (!deleted) {
       throw new ApiErrors("User not found", 404);
     }
