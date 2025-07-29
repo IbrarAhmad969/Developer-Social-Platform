@@ -45,9 +45,41 @@ const httpDeleteUserById = async (req, res, next) => {
     next(error);
   }
 }
+const httpUpdateUserById = async(req, res, next) =>{
+  try {
+    const userId = req.params.id;
+
+    const {name, role} = req.body; 
+
+    if(!name && !role){
+      throw new ApiErrors("provide name or role", 400);
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {$set: {...(name && {name}), ...(role && {role})}}, 
+      {new: true, runValidator: true}
+    );
+
+    if(!updatedUser){
+      throw new ApiErrors("User not Found ", 404);
+    }
+
+    return successResponse(res, updatedUser, "User Updated Successfully ");
+
+
+    
+  } catch (error) {
+    if(error.name === "CastError"){
+      return next(new ApiErrors("Oops! That user ID doesn't look right", 400));
+    }
+    next(error);
+  }
+}
 
 module.exports = {
   httpGetAllUsers,
   httpCreateUser,
   httpDeleteUserById,
+  httpUpdateUserById,
 };
