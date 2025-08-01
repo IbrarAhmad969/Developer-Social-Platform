@@ -1,4 +1,5 @@
 const cloudinary = require("cloudinary").v2;
+
 const fs = require("fs");
 
 cloudinary.config({
@@ -8,6 +9,14 @@ cloudinary.config({
 });
 
 const uploadOnCloudinary = async (localFilePath) => {
+
+  console.log(`
+    cloudName: ${process.env.CLOUDINARY_CLOUD_NAME}, 
+    api_key: ${process.env.CLOUDINARY_API_KEY},
+    api_secret: ${process.env.CLOUDINARY_API_SECRET},
+    `)
+
+
   try {
     if (!localFilePath) return null;
 
@@ -17,8 +26,8 @@ const uploadOnCloudinary = async (localFilePath) => {
     fs.unlinkSync(localFilePath);
     return response;
   } catch (error) {
-    fs.unlinkSync(localFilePath);
+    if (fs.existsSync(localFilePath)) fs.unlinkSync(localFilePath);
     return null;
   }
 };
-module.exports = uploadOnCloudinary
+module.exports = { uploadOnCloudinary }

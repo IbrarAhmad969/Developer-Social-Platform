@@ -6,11 +6,15 @@ const userSchema = new Schema({
 
   name: {
     type: String,
-    required: [true, 'Name is Required']
+    required: [true, 'Name is required']
+  },
+  email: {
+    type: String, 
+    required: [true, 'Email is required']
   },
   role: {
     type: String,
-    required: [true, "Role is Required"],
+    required: [true, "Role is required"],
   },
   coverImage: {
     type: String,
