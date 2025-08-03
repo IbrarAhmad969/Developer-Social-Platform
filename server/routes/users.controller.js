@@ -2,8 +2,29 @@ const { successResponse, errorResponse } = require("../utils/apiResponse");
 const User = require("../models/users.model");
 const ApiErrors = require("../utils/apiError");
 const path = require("path"); // make sure this is at the top
-
 const { uploadOnCloudinary } = require('../utils/cloudinary');
+
+
+const accessAndRefreshTokenGenerator = async (userId) => {
+  try {
+
+    const user = await User.findById(userId);
+
+
+    const accessToken = await user.generateAccessToken();
+    const refreshToken = await user.generateRefreshToken();
+
+    user.refreshToken = refreshToken;
+
+    await user.save({ validateBeforeSave: false });
+    return { accessToken, refreshToken }
+
+  } catch (error) {
+    throw new ApiErrors("Something went wrong while generating Access and refresh tokens, try again", 500);
+  }
+}
+
+
 
 //Get Method to Get the Users.
 
@@ -33,6 +54,8 @@ const httpCreateUser = async (req, res, next) => {
     // send the response without password
     // check if user is created or not send the error Response
     // return response to the user?
+
+    //1.
 
     const { name, email, role, password } = req.body;
 
@@ -92,6 +115,57 @@ const httpCreateUser = async (req, res, next) => {
     next(error);
   }
 };
+const httpLoginUser = async (req, res, next) => {
+
+  const { email, password, name } = req.body;
+
+  if ([email, password].some((field) => field.trim() === '')) {
+    throw new ApiErrors("All fields are required", 400);
+  }
+
+  const user = await User.findOne({
+    email,
+  })
+
+  if (!user) {
+    throw new ApiErrors("This user doesn't exist", 401);
+  }
+
+    console.log(`${password} : this is the password `);
+
+
+  const isPasswordCorrect = await user.isPasswordCorrect(password);
+
+  console.log(`${isPasswordCorrect} : this is the password `);
+
+  if (!isPasswordCorrect) {
+    throw new ApiErrors("Password is incorrect, enter a valid password", 401);
+  }
+
+  // Setting cookies, for secure login/auth. 
+
+  const { refreshToken, accessToken } = await accessAndRefreshTokenGenerator(user._id);
+
+  const loggedInUser = await User.findById(user._id)
+    .select("-password -refreshToken");
+
+  const options = {
+    httpOnly: true,
+    secure: true,
+  }
+
+  return successResponse(res
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options),
+    {
+      user: loggedInUser, accessToken, refreshToken,
+    },
+    "User Successfully LoggedIn. ",
+    200
+  )
+}
+
+
 const httpDeleteUserById = async (req, res, next) => {
   try {
     const userId = req.params.id;
@@ -143,4 +217,5 @@ module.exports = {
   httpCreateUser,
   httpDeleteUserById,
   httpUpdateUserById,
+  httpLoginUser,
 };

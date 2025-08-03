@@ -1,9 +1,12 @@
 const express = require("express");
 const app = express();
+const cookieParser = require("cookie-parser");
 const routers = require("./routes/users.route");
 const errorHandler = require("./middleware/errorsHandler");
 
 app.use(express.json());
+app.use(cookieParser());
+
 
 app.use("/api/v1/users", routers);
 app.use("/", (req, res) => {

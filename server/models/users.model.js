@@ -27,6 +27,9 @@ const userSchema = new Schema({
   password: {
     type: String,
     require: [true, "Password is missing "]
+  },
+  refreshToken: {
+    type: String, 
   }
 
 }, { timestamps: true });
@@ -43,7 +46,7 @@ userSchema.pre("save", async function (next) {
 // these are now methods on the model 
 
 userSchema.methods.isPasswordCorrect = async function(password){
-  return await bcrypt.compare(this.password, password);
+  return await bcrypt.compare(password, this.password);
 }
 
 userSchema.methods.generateAccessToken = async function(){
