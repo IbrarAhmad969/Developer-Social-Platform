@@ -1,11 +1,14 @@
 const express = require("express");
 const upload = require("../middleware/multer.middleware")
+const verifyJwt = require("../middleware/auth.middleware");
+
 const {
   httpGetAllUsers,
   httpCreateUser,
   httpDeleteUserById,
   httpUpdateUserById,
-  httpLoginUser
+  httpLoginUser,
+  httpLogOutUser,
 } = require("./users.controller");
 const { createUserSchema } = require("../utils/validators/user.validator");
 const validateRequest = require("../middleware/validate");
@@ -26,6 +29,7 @@ routers.post("/", upload.fields([
   }
 ]), httpCreateUser);
 
+routers.post("/logout", verifyJwt, httpLogOutUser);
 routers.delete("/:id", httpDeleteUserById);
 routers.put("/:id", httpUpdateUserById);
 

@@ -24,8 +24,6 @@ const accessAndRefreshTokenGenerator = async (userId) => {
   }
 }
 
-
-
 //Get Method to Get the Users.
 
 const httpGetAllUsers = async (req, res, next) => {
@@ -131,7 +129,7 @@ const httpLoginUser = async (req, res, next) => {
     throw new ApiErrors("This user doesn't exist", 401);
   }
 
-    console.log(`${password} : this is the password `);
+  console.log(`${password} : this is the password `);
 
 
   const isPasswordCorrect = await user.isPasswordCorrect(password);
@@ -164,8 +162,6 @@ const httpLoginUser = async (req, res, next) => {
     200
   )
 }
-
-
 const httpDeleteUserById = async (req, res, next) => {
   try {
     const userId = req.params.id;
@@ -211,6 +207,41 @@ const httpUpdateUserById = async (req, res, next) => {
     next(error);
   }
 };
+const httpLogOutUser = async (req, res) => {
+  // we need a user id. make a middleware. 
+  try {
+
+    await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        $set: {
+          refreshToken: undefined
+        }
+      },
+      {
+        new: true,
+
+      }
+    )
+
+    const options = {
+      httpOnly: true,
+      secure: true,
+    }
+
+    return successResponse(
+      res
+        .clearCookie("accessToken", options)
+        .clearCookie("refreshToken", options),
+      {},
+      "User Log out Successfully! "
+    )
+
+  } catch (error) {
+    throw new ApiErrors("Can not logout, something went wrong", 400);
+  }
+
+}
 
 module.exports = {
   httpGetAllUsers,
@@ -218,4 +249,5 @@ module.exports = {
   httpDeleteUserById,
   httpUpdateUserById,
   httpLoginUser,
+  httpLogOutUser,
 };

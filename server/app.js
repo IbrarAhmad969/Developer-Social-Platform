@@ -7,7 +7,6 @@ const errorHandler = require("./middleware/errorsHandler");
 app.use(express.json());
 app.use(cookieParser());
 
-
 app.use("/api/v1/users", routers);
 app.use("/", (req, res) => {
   res.send("Welcome To the Express mode");
