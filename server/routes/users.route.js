@@ -9,6 +9,7 @@ const {
   httpUpdateUserById,
   httpLoginUser,
   httpLogOutUser,
+  httpGenerateAccessToken,
 } = require("./users.controller");
 const { createUserSchema } = require("../utils/validators/user.validator");
 const validateRequest = require("../middleware/validate");
@@ -30,6 +31,7 @@ routers.post("/", upload.fields([
 ]), httpCreateUser);
 
 routers.post("/logout", verifyJwt, httpLogOutUser);
+routers.get("/refreshToken", httpGenerateAccessToken)
 routers.delete("/:id", httpDeleteUserById);
 routers.put("/:id", httpUpdateUserById);
 

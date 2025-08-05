@@ -3,6 +3,7 @@ const User = require("../models/users.model");
 const ApiErrors = require("../utils/apiError");
 const path = require("path"); // make sure this is at the top
 const { uploadOnCloudinary } = require('../utils/cloudinary');
+const jwt = require("jsonwebtoken")
 
 
 const accessAndRefreshTokenGenerator = async (userId) => {
@@ -242,6 +243,53 @@ const httpLogOutUser = async (req, res) => {
   }
 
 }
+const httpGenerateAccessToken = async (req, res, next) => {
+  try {
+    const incomingRequestToken  = req.cookies.refreshToken || req.body.refreshToken;
+
+    console.log(incomingRequestToken)
+
+    if (!incomingRequestToken) {
+      return next(new ApiErrors("UnAuthorize Request", 400));
+    }
+
+    const decodedToken = jwt.verify(incomingRequestToken, process.env.REFRESH_TOKEN_SECRET)
+
+    const user = await User.findById(decodedToken._id)
+
+    if (!user) {
+      throw new ApiErrors("Invalid Refresh Token", 401);
+    }
+
+    if (incomingRequestToken !== user?.refreshToken) {
+      throw new ApiErrors("Refresh token is expired", 401);
+    }
+
+    const options = {
+      httpOnly: true,
+      secure: true,
+    }
+
+    const { accessToken, user_refreshToken } = await accessAndRefreshTokenGenerator(user._id);
+    console.log(user_refreshToken);
+    return successResponse(
+      res
+        .cookie("accessToken", accessToken, options)
+        .cookie("refreshToken", user_refreshToken, options),
+        { 
+          accessToken,
+          refreshToken: user_refreshToken 
+        },
+      "Access token generated successfully",
+      200
+
+    );
+
+  } catch (error) {
+    next(new ApiErrors("Something went wrong while generating Access token" || error?.message, 500));
+
+  }
+}
 
 module.exports = {
   httpGetAllUsers,
@@ -250,4 +298,5 @@ module.exports = {
   httpUpdateUserById,
   httpLoginUser,
   httpLogOutUser,
+  httpGenerateAccessToken,
 };
