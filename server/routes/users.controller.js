@@ -130,12 +130,7 @@ const httpLoginUser = async (req, res, next) => {
     throw new ApiErrors("This user doesn't exist", 401);
   }
 
-  console.log(`${password} : this is the password `);
-
-
   const isPasswordCorrect = await user.isPasswordCorrect(password);
-
-  console.log(`${isPasswordCorrect} : this is the password `);
 
   if (!isPasswordCorrect) {
     throw new ApiErrors("Password is incorrect, enter a valid password", 401);
@@ -270,15 +265,15 @@ const httpGenerateAccessToken = async (req, res, next) => {
       secure: true,
     }
 
-    const { accessToken, user_refreshToken } = await accessAndRefreshTokenGenerator(user._id);
-    console.log(user_refreshToken);
+    const { accessToken, refreshToken } = await accessAndRefreshTokenGenerator(user._id);
+    console.log(refreshToken);
     return successResponse(
       res
         .cookie("accessToken", accessToken, options)
-        .cookie("refreshToken", user_refreshToken, options),
+        .cookie("refreshToken", refreshToken, options),
         { 
-          accessToken,
-          refreshToken: user_refreshToken 
+          accessToken: accessToken,
+          refreshToken: refreshToken 
         },
       "Access token generated successfully",
       200
@@ -286,7 +281,7 @@ const httpGenerateAccessToken = async (req, res, next) => {
     );
 
   } catch (error) {
-    next(new ApiErrors("Something went wrong while generating Access token" || error?.message, 500));
+    next(new ApiErrors("Something went wrong while generating Access token, user is not logged in" || error?.message, 500));
 
   }
 }
