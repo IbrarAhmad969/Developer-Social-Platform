@@ -114,7 +114,7 @@ const httpCreateUser = async (req, res, next) => {
     next(error);
   }
 };
-const httpLoginUser = async (req, res, next) => {
+const httpLoginUser = async (req, res) => {
 
   const { email, password, name } = req.body;
 
@@ -240,7 +240,7 @@ const httpLogOutUser = async (req, res) => {
 }
 const httpGenerateAccessToken = async (req, res, next) => {
   try {
-    const incomingRequestToken  = req.cookies.refreshToken || req.body.refreshToken;
+    const incomingRequestToken = req.cookies.refreshToken || req.body.refreshToken;
 
     if (!incomingRequestToken) {
       return next(new ApiErrors("UnAuthorize Request", 400));
@@ -268,10 +268,10 @@ const httpGenerateAccessToken = async (req, res, next) => {
       res
         .cookie("accessToken", accessToken, options)
         .cookie("refreshToken", refreshToken, options),
-        { 
-          accessToken: accessToken,
-          refreshToken: refreshToken 
-        },
+      {
+        accessToken: accessToken,
+        refreshToken: refreshToken
+      },
       "Access token generated successfully",
       200
 
@@ -282,30 +282,138 @@ const httpGenerateAccessToken = async (req, res, next) => {
 
   }
 }
-
 const httpChangeCurrentPassword = async (req, res) => {
 
-    const { oldPassword, newPassword } = req.body
+  const { oldPassword, newPassword } = req.body
 
-    const user = await User.findById(req.user?._id)
+  const user = await User.findById(req.user?._id)
 
-    // check the password 
+  // check the password 
 
-    const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
+  const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
 
-    if (!isPasswordCorrect) {
-        throw new ApiError(400, "Invalid Password");
+  if (!isPasswordCorrect) {
+    throw new ApiErrors("Invalid Password", 400);
 
-    }
+  }
 
-    user.password = newPassword
-    await user.save({ validateBeforeSave: false })
+  user.password = newPassword
+  await user.save({ validateBeforeSave: false })
 
-    return res
-        .status(200)
-        .json(new ApiResponse(200, {}, "Password Changed Successfully"))
+  return successResponse(
+    res,
+    {},
+    "Changed Successfully",
+    201,
+
+  )
 
 }
+const httpGetCurrentUser = async (req, res) => {
+  return successResponse(
+    res,
+    req.user,
+    "Current User Found ",
+    200,
+
+  )
+}
+
+const httpUpdateAccountDetails = async (req, res) => {
+  const { name, email } = req.body
+
+  if (!(name) || !(email)) {
+    throw new ApiErrors(
+      "All fields are required",
+      400,
+    )
+  }
+  const user = User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set: {
+        name,
+        email, email,
+
+      },
+
+    },
+    {
+      new: true
+    }
+  ).select("-password")
+
+  return successResponse(
+    res,
+    user,
+    "Account details updated successfully",
+    201,
+  )
+}
+
+const httpUpdateUserAvatar = async (req, res) => {
+  const avatarLocalPath = req.file?.path
+
+  if (!avatarLocalPath) {
+    throw new ApiErrors("Files path is missing", 400)
+  }
+
+  const avatar = await uploadOnCloudinary(avatarLocalPath);
+
+  if (!avatar.url) {
+    throw new ApiErrors("Error while uploading", 401)
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set: {
+        avatar: avatar.url,
+      }
+    },
+    {
+      new: true
+    }
+  ).select("-password")
+
+  return successResponse(res,
+    user,
+    "Avatar Updated Successfully"
+  )
+}
+
+
+const httpUpdateUserCoverImage = async (req, res) => {
+  const coverImageLocalPath = req.file?.path
+
+  if (!coverImageLocalPath) {
+    throw new ApiErrors("Files path is missing", 400)
+  }
+
+  const avatar = await uploadOnCloudinary(coverImageLocalPath);
+
+  if (!avatar.url) {
+    throw new ApiErrors("Error while uploading", 401)
+  }
+
+  const user = await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set: {
+        coverImage: coverImageLocalPath.url,
+      }
+    },
+    {
+      new: true
+    }
+  ).select("-password")
+
+  return successResponse(res,
+    user,
+    "Avatar Updated Successfully"
+  )
+}
+
 module.exports = {
   httpGetAllUsers,
   httpCreateUser,
@@ -315,5 +423,11 @@ module.exports = {
   httpLogOutUser,
   httpGenerateAccessToken,
   httpChangeCurrentPassword,
+
+  httpGetCurrentUser,
+  httpUpdateAccountDetails,
+  httpUpdateUserAvatar,
+  httpUpdateUserCoverImage
+
 
 };
