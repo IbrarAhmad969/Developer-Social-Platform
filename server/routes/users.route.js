@@ -18,7 +18,7 @@ const validateRequest = require("../middleware/validate");
 
 const routers = express.Router();
 
-routers.get("/", httpGetAllUsers);
+routers.get("/getAllUsers", httpGetAllUsers);
 
 routers.post("/loginUser", httpLoginUser);
 
