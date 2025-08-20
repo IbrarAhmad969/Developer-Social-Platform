@@ -22,7 +22,7 @@ routers.get("/", httpGetAllUsers);
 
 routers.post("/loginUser", httpLoginUser);
 
-routers.post("/user", upload.fields([
+routers.post("/createUser", upload.fields([
   {
     name: "avatar",
     maxCount: 1,
