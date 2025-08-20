@@ -21,7 +21,8 @@ const routers = express.Router();
 routers.get("/", httpGetAllUsers);
 
 routers.post("/loginUser", httpLoginUser);
-routers.post("/", upload.fields([
+
+routers.post("/user", upload.fields([
   {
     name: "avatar",
     maxCount: 1,
