@@ -12,6 +12,9 @@ app.use("/", (req, res) => {
   res.send("Welcome To the Express mode");
 });
 
+app.get("/", (req, res) => res.send("Congratulation 🎉🎉! Our Express server is Running on Vercel"));
+
+
 app.use(errorHandler);
 
 module.exports = {
