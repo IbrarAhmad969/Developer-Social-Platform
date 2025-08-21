@@ -9,7 +9,7 @@ const cors = require("cors");
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
-  origin: ["*", "https://furniture-showroom-backend.vercel.app", "http://localhost:5173"],
+  origin: ["*", "https://furniture-showroom-one.vercel.app", "http://localhost:5173"],
   methods: ["GET", "POST", "PUT", "DELETE"],
 
 }))
