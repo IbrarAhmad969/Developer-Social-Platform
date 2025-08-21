@@ -126,11 +126,13 @@ const httpLoginUser = async (req, res) => {
     email,
   })
 
+  
   if (!user) {
     throw new ApiErrors("This user doesn't exist", 401);
   }
 
   const isPasswordCorrect = await user.isPasswordCorrect(password);
+  console.log(isPasswordCorrect);
 
   if (!isPasswordCorrect) {
     throw new ApiErrors("Password is incorrect, enter a valid password", 401);

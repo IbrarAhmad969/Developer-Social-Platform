@@ -5,7 +5,6 @@ const routers = require("./routes/users.route");
 const errorHandler = require("./middleware/errorsHandler");
 const cors = require("cors");
 
-
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({
