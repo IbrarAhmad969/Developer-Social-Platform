@@ -5,24 +5,22 @@ const routers = require("./routes/users.route");
 const errorHandler = require("./middleware/errorsHandler");
 const cors = require("cors");
 
-app.use(express.json());
-app.use(cookieParser());
 
 app.use(cors({
-  origin: ["*", "https://furniture-showroom-one.vercel.app", "http://localhost:5173"],
+  origin: ["*", "http://localhost:8000", "https://furniture-showroom-one.vercel.app", "http://localhost:5173"],
   methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true,
 
 }))
 
-app.use("/api/v1/users", routers);
+app.use(express.json());
+app.use(cookieParser());
 
+app.use("/api/v1/users", routers);
 
 app.use("/", (req, res) => {
   res.send("Welcome To the Express mode");
 });
-
-app.get("/", (req, res) => res.send("Congratulation 🎉🎉! Our Express server is Running on Vercel"));
 
 
 app.use(errorHandler);
