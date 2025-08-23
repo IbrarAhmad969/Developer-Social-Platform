@@ -126,7 +126,7 @@ const httpLoginUser = async (req, res) => {
     email,
   })
 
-  
+
   if (!user) {
     throw new ApiErrors("This user doesn't exist", 401);
   }
@@ -226,6 +226,7 @@ const httpLogOutUser = async (req, res) => {
     const options = {
       httpOnly: true,
       secure: true,
+      sameSite: "None",
     }
 
     return successResponse(
