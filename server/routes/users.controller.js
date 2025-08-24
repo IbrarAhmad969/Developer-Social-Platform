@@ -111,7 +111,8 @@ const httpCreateUser = async (req, res, next) => {
     return successResponse(res, createdUser, "User Registered Successfully");
 
   } catch (error) {
-    next(error);
+    console.error("Signup error:", error.response?.data || error.message);
+
   }
 };
 const httpLoginUser = async (req, res) => {
