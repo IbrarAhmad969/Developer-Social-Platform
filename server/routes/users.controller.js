@@ -58,6 +58,9 @@ const httpCreateUser = async (req, res, next) => {
 
     const { name, email, role, password } = req.body;
 
+    console.log(`${name} ${req.files?.avatar[0].path}`);
+    
+
     //2.
 
     if ([name, email, role, password].some((field) => field.trim() === "")) {
@@ -74,8 +77,10 @@ const httpCreateUser = async (req, res, next) => {
     }
 
     //4. upload 
-
     const avatarLocalPath = req.files?.avatar[0].path
+
+    console.log(avatarLocalPath);
+  
     const coverLocalImage = req.files?.coverImage?.length ? req.files.coverImage[0].path : undefined;
 
     if (!avatarLocalPath) {
@@ -111,6 +116,7 @@ const httpCreateUser = async (req, res, next) => {
     return successResponse(res, createdUser, "User Registered Successfully");
 
   } catch (error) {
+    
     console.error("Signup error:", error.response?.data || error.message);
 
   }
