@@ -39,7 +39,7 @@ const createSendToken = async (user, statusCode, res) => {
     expires: new Date(Date.now() + ms(process.env.REFRESH_TOKEN_EXPIRY)),
     httpOnly: true,
     path: '/',
-    secure: false,
+    secure: true,
     sameSite: "none"
   }
 
