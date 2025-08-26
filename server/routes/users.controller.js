@@ -40,7 +40,7 @@ const createSendToken = async (user, statusCode, res, accessToken, refreshToken)
     httpOnly: true,
     path: '/',
     secure: true,
-    sameSite: "none"
+    sameSite: "None",
   }
 
   user.password = undefined;
