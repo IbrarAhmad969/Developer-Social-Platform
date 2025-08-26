@@ -11,6 +11,7 @@ const {
   httpLogOutUser,
   httpGenerateAccessToken,
   httpChangeCurrentPassword,
+  googleAuth
 
 } = require("./users.controller");
 const { createUserSchema } = require("../utils/validators/user.validator");
@@ -38,6 +39,8 @@ routers.get("/refreshToken", httpGenerateAccessToken);
 routers.post("/changeCurrentPassword",  httpChangeCurrentPassword)
 routers.delete("/:id", httpDeleteUserById);
 routers.put("/:id", httpUpdateUserById);
+
+routers.get("/google", googleAuth);
 
 
 module.exports = routers;

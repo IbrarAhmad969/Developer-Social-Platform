@@ -1,9 +1,14 @@
 const { successResponse, errorResponse } = require("../utils/apiResponse");
 const User = require("../models/users.model");
 const ApiErrors = require("../utils/apiError");
-const path = require("path"); // make sure this is at the top
+const path = require("path");
 const { uploadOnCloudinary } = require('../utils/cloudinary');
-const jwt = require("jsonwebtoken")
+const jwt = require("jsonwebtoken");
+const { oauth2Client } = require("../utils/oauth2client");
+const { default: axios } = require("axios");
+const crypto = require("crypto");
+const ms = require("ms");
+
 
 
 const accessAndRefreshTokenGenerator = async (userId) => {
@@ -23,6 +28,34 @@ const accessAndRefreshTokenGenerator = async (userId) => {
   } catch (error) {
     throw new ApiErrors("Something went wrong while generating Access and refresh tokens, try again", 500);
   }
+}
+
+// create and send cookies 
+
+const createSendToken = async (user, statusCode, res) => {
+  const { accessToken, refreshToken } = await accessAndRefreshTokenGenerator(user.id);
+
+  const cookieOption = {
+    expires: new Date(Date.now() + ms(process.env.REFRESH_TOKEN_EXPIRY)),
+    httpOnly: true,
+    path: '/',
+    secure: false,
+    sameSite: "none"
+  }
+
+  user.password = undefined;
+
+  res.cookie('jwt', refreshToken, cookieOption);
+
+  console.log(user);
+
+  res.status(statusCode).json({
+    message: "Success",
+    refreshToken,
+    data: {
+      user,
+    }
+  })
 }
 
 //Get Method to Get the Users.
@@ -58,9 +91,6 @@ const httpCreateUser = async (req, res, next) => {
 
     const { name, email, role, password } = req.body;
 
-    console.log(`${name} ${req.files?.avatar[0].path}`);
-    
-
     //2.
 
     if ([name, email, role, password].some((field) => field.trim() === "")) {
@@ -80,7 +110,7 @@ const httpCreateUser = async (req, res, next) => {
     const avatarLocalPath = req.files?.avatar[0].path
 
     console.log(avatarLocalPath);
-  
+
     const coverLocalImage = req.files?.coverImage?.length ? req.files.coverImage[0].path : undefined;
 
     if (!avatarLocalPath) {
@@ -116,7 +146,7 @@ const httpCreateUser = async (req, res, next) => {
     return successResponse(res, createdUser, "User Registered Successfully");
 
   } catch (error) {
-    
+
     console.error("Signup error:", error.response?.data || error.message);
 
   }
@@ -393,7 +423,6 @@ const httpUpdateUserAvatar = async (req, res) => {
   )
 }
 
-
 const httpUpdateUserCoverImage = async (req, res) => {
   const coverImageLocalPath = req.file?.path
 
@@ -425,6 +454,42 @@ const httpUpdateUserCoverImage = async (req, res) => {
   )
 }
 
+const googleAuth = async (req, res, next) => {
+
+  const code = req.query.code;
+
+  try {
+    console.log("User Credential : ", code);
+
+    const { tokens } = await oauth2Client.getToken(code);
+    oauth2Client.setCredentials(tokens);
+
+    const userRes = await axios.get(
+      `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${tokens.access_token}`
+    );
+
+    let user = await User.findOne({
+      email: userRes.data.email
+    });
+
+    if (!user) {
+      console.log('New User found');
+      user = await User.create({
+        name: userRes.data.name,
+        email: userRes.data.email,
+        avatar: userRes.data.picture,
+        role: "User",
+        password: crypto.randomBytes(20).toString("hex"),
+      });
+    }
+
+    createSendToken(user, 201, res);
+
+  } catch (error) {
+    console.log(error)
+  }
+}
+
 module.exports = {
   httpGetAllUsers,
   httpCreateUser,
@@ -438,7 +503,9 @@ module.exports = {
   httpGetCurrentUser,
   httpUpdateAccountDetails,
   httpUpdateUserAvatar,
-  httpUpdateUserCoverImage
+  httpUpdateUserCoverImage,
+
+  googleAuth,
 
 
 };
