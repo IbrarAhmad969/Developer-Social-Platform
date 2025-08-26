@@ -476,7 +476,9 @@ const googleAuth = async (req, res, next) => {
     oauth2Client.setCredentials(tokens);
 
     const userRes = await axios.get(
-      `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${tokens.access_token}`
+      `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${tokens.access_token}`, {
+        withCredentials: true
+      }
     );
 
     let user = await User.findOne({
