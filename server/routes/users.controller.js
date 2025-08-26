@@ -431,7 +431,10 @@ const httpUpdateUserCoverImage = async (req, res) => {
 }
 
 const createSendToken = async (user, statusCode, res) => {
+  console.log("create send token ")
   const { accessToken, refreshToken } = await accessAndRefreshTokenGenerator(user.id);
+
+  console.log("after getting refresh token ")
 
   const cookieOption = {
     expires: new Date(Date.now() + ms(process.env.REFRESH_TOKEN_EXPIRY)),
@@ -442,6 +445,8 @@ const createSendToken = async (user, statusCode, res) => {
   }
 
   user.password = undefined;
+
+  console.log("Sending cookies ")
 
   res.cookie("accessToken", accessToken, cookieOption);
   res.cookie("refreshToken", refreshToken, cookieOption);
@@ -461,6 +466,8 @@ const createSendToken = async (user, statusCode, res) => {
 const googleAuth = async (req, res, next) => {
 
   const code = req.query.code;
+
+  console.log(code);
 
   try {
     console.log("User Credential : ", code);
