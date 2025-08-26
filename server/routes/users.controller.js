@@ -32,7 +32,7 @@ const accessAndRefreshTokenGenerator = async (userId) => {
 
 // create and send cookies 
 
-const createSendToken = async (user, statusCode, res) => {
+const createSendToken = async (user, statusCode, res, accessToken, refreshToken) => {
   const { accessToken, refreshToken } = await accessAndRefreshTokenGenerator(user.id);
 
   const cookieOption = {
@@ -45,7 +45,9 @@ const createSendToken = async (user, statusCode, res) => {
 
   user.password = undefined;
 
-  res.cookie('jwt', refreshToken, cookieOption);
+  res.cookie("accessToken", accessToken, cookieOption);
+  res.cookie("refreshToken", refreshToken, cookieOption);
+
 
   console.log(user);
 
@@ -185,7 +187,8 @@ const httpLoginUser = async (req, res) => {
   const options = {
     httpOnly: true,
     secure: true,
-    sameSite: "None"
+    sameSite: "None",
+    path: "/"
   }
 
   return successResponse(res
@@ -264,6 +267,7 @@ const httpLogOutUser = async (req, res) => {
       httpOnly: true,
       secure: true,
       sameSite: "None",
+      path: "/"
     }
 
     return successResponse(
@@ -302,6 +306,8 @@ const httpGenerateAccessToken = async (req, res, next) => {
     const options = {
       httpOnly: true,
       secure: true,
+      sameSite: "None",
+      path: "/"
     }
 
     const { accessToken, refreshToken } = await accessAndRefreshTokenGenerator(user._id);
@@ -483,7 +489,10 @@ const googleAuth = async (req, res, next) => {
       });
     }
 
-    createSendToken(user, 201, res);
+    const accessToken = generateAccessToken(user._id);
+    const refreshToken = generateRefreshToken(user._id);
+
+    createSendToken(user, 201, res, accessToken, refreshToken);
 
   } catch (error) {
     console.log(error)
