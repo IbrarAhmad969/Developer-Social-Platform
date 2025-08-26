@@ -30,36 +30,6 @@ const accessAndRefreshTokenGenerator = async (userId) => {
   }
 }
 
-// create and send cookies 
-
-const createSendToken = async (user, statusCode, res, accessToken, refreshToken) => {
-  const { accessToken, refreshToken } = await accessAndRefreshTokenGenerator(user.id);
-
-  const cookieOption = {
-    expires: new Date(Date.now() + ms(process.env.REFRESH_TOKEN_EXPIRY)),
-    httpOnly: true,
-    path: '/',
-    secure: true,
-    sameSite: "None",
-  }
-
-  user.password = undefined;
-
-  res.cookie("accessToken", accessToken, cookieOption);
-  res.cookie("refreshToken", refreshToken, cookieOption);
-
-
-  console.log(user);
-
-  res.status(statusCode).json({
-    message: "Success",
-    refreshToken,
-    data: {
-      user,
-    }
-  })
-}
-
 //Get Method to Get the Users.
 
 const httpGetAllUsers = async (req, res, next) => {
@@ -460,6 +430,34 @@ const httpUpdateUserCoverImage = async (req, res) => {
   )
 }
 
+const createSendToken = async (user, statusCode, res) => {
+  const { accessToken, refreshToken } = await accessAndRefreshTokenGenerator(user.id);
+
+  const cookieOption = {
+    expires: new Date(Date.now() + ms(process.env.REFRESH_TOKEN_EXPIRY)),
+    httpOnly: true,
+    path: '/',
+    secure: true,
+    sameSite: "None",
+  }
+
+  user.password = undefined;
+
+  res.cookie("accessToken", accessToken, cookieOption);
+  res.cookie("refreshToken", refreshToken, cookieOption);
+
+
+  console.log(user);
+
+  res.status(statusCode).json({
+    message: "Success",
+    refreshToken,
+    data: {
+      user,
+    }
+  })
+}
+
 const googleAuth = async (req, res, next) => {
 
   const code = req.query.code;
@@ -489,10 +487,7 @@ const googleAuth = async (req, res, next) => {
       });
     }
 
-    const accessToken = generateAccessToken(user._id);
-    const refreshToken = generateRefreshToken(user._id);
-
-    createSendToken(user, 201, res, accessToken, refreshToken);
+    createSendToken(user, 201, res);
 
   } catch (error) {
     console.log(error)
