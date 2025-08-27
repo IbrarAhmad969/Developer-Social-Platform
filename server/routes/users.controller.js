@@ -81,8 +81,6 @@ const httpCreateUser = async (req, res, next) => {
     //4. upload 
     const avatarLocalPath = req.files?.avatar[0].path
 
-    console.log(avatarLocalPath);
-
     const coverLocalImage = req.files?.coverImage?.length ? req.files.coverImage[0].path : undefined;
 
     if (!avatarLocalPath) {
@@ -125,7 +123,7 @@ const httpCreateUser = async (req, res, next) => {
 };
 const httpLoginUser = async (req, res) => {
 
-  const { email, password, name } = req.body;
+  const { email, password } = req.body;
 
   if ([email, password].some((field) => field.trim() === '')) {
     throw new ApiErrors("All fields are required", 400);
@@ -141,7 +139,6 @@ const httpLoginUser = async (req, res) => {
   }
 
   const isPasswordCorrect = await user.isPasswordCorrect(password);
-  console.log(isPasswordCorrect);
 
   if (!isPasswordCorrect) {
     throw new ApiErrors("Password is incorrect, enter a valid password", 401);
@@ -430,12 +427,8 @@ const httpUpdateUserCoverImage = async (req, res) => {
   )
 }
 
-const createSendToken = async (user, statusCode, res) => {
-  console.log("create send token ")
-  const { accessToken, refreshToken } = await accessAndRefreshTokenGenerator(user.id);
-
-  console.log("after getting refresh token ")
-
+const createSendToken = async (user, statusCode, res, accessToken, refreshToken) => {
+ 
   const cookieOption = {
     expires: new Date(Date.now() + ms(process.env.REFRESH_TOKEN_EXPIRY)),
     httpOnly: true,
@@ -445,7 +438,6 @@ const createSendToken = async (user, statusCode, res) => {
   }
 
   user.password = undefined;
-
 
   res.cookie("accessToken", accessToken, cookieOption);
   res.cookie("refreshToken", refreshToken, cookieOption);
@@ -459,14 +451,16 @@ const createSendToken = async (user, statusCode, res) => {
   })
 }
 
-const googleAuth = async (req, res, next) => {
+const googleAuth = async (req, res) => {
 
   const code = req.query.code;
 
-  console.log(code);
-
   try {
     const { tokens } = await oauth2Client.getToken(code);
+
+    const oAuthAccessToken = tokens.access_token;
+    const oAuthRefreshToken = tokens.refresh_token;
+
     oauth2Client.setCredentials(tokens);
 
     const userRes = await axios.get( // get the access and refresh tokens 
@@ -485,12 +479,13 @@ const googleAuth = async (req, res, next) => {
         name: userRes.data.name,
         email: userRes.data.email,
         avatar: userRes.data.picture,
+        refreshToken: oAuthRefreshToken,
         role: "User",
         password: crypto.randomBytes(20).toString("hex"),
       });
     }
 
-    createSendToken(user, 201, res);
+    createSendToken(user, 201, res, oAuthAccessToken, oAuthRefreshToken);
 
   } catch (error) {
     console.log(error)
