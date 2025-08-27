@@ -8,7 +8,7 @@ const verifyJwt = async (req, res, next) => {
     const token = req.cookies?.accessToken || req.header("Authorization")?.replace("Bearer ", "");
     console.log(token);
     if (!token) {
-      throw new ApiErrors("UnAuthorized request", 401);
+      throw new ApiErrors(`UnAuthorized request ${token}`, 401);
     }
 
     console.log("before decoded jwt verify");
