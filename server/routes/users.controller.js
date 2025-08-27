@@ -470,12 +470,10 @@ const googleAuth = async (req, res, next) => {
   console.log(code);
 
   try {
-    console.log("User Credential : ", code);
-
     const { tokens } = await oauth2Client.getToken(code);
     oauth2Client.setCredentials(tokens);
 
-    const userRes = await axios.get(
+    const userRes = await axios.get( // get the access and refresh tokens 
       `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${tokens.access_token}`, {
         withCredentials: true
       }
