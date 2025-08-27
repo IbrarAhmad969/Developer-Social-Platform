@@ -428,7 +428,7 @@ const httpUpdateUserCoverImage = async (req, res) => {
 }
 
 const createSendToken = async (user, statusCode, res, accessToken, refreshToken) => {
- 
+
   const cookieOption = {
     expires: new Date(Date.now() + ms(process.env.REFRESH_TOKEN_EXPIRY)),
     httpOnly: true,
@@ -458,15 +458,12 @@ const googleAuth = async (req, res) => {
   try {
     const { tokens } = await oauth2Client.getToken(code);
 
-    const oAuthAccessToken = tokens.access_token;
-    const oAuthRefreshToken = tokens.refresh_token;
-
     oauth2Client.setCredentials(tokens);
 
     const userRes = await axios.get( // get the access and refresh tokens 
       `https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${tokens.access_token}`, {
-        withCredentials: true
-      }
+      withCredentials: true
+    }
     );
 
     let user = await User.findOne({
@@ -479,13 +476,13 @@ const googleAuth = async (req, res) => {
         name: userRes.data.name,
         email: userRes.data.email,
         avatar: userRes.data.picture,
-        refreshToken: oAuthRefreshToken,
         role: "User",
         password: crypto.randomBytes(20).toString("hex"),
       });
     }
+    const { refreshToken, accessToken } = await accessAndRefreshTokenGenerator(user._id);
 
-    createSendToken(user, 201, res, oAuthAccessToken, oAuthRefreshToken);
+    createSendToken(user, 201, res, refreshToken, accessToken);
 
   } catch (error) {
     console.log(error)
