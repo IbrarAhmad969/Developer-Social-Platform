@@ -446,19 +446,15 @@ const createSendToken = async (user, statusCode, res) => {
 
   user.password = undefined;
 
-  console.log("Sending cookies ")
 
   res.cookie("accessToken", accessToken, cookieOption);
   res.cookie("refreshToken", refreshToken, cookieOption);
-
-
-  console.log(user);
 
   res.status(statusCode).json({
     message: "Success",
     refreshToken,
     data: {
-      user,
+      user, accessToken, refreshToken
     }
   })
 }
