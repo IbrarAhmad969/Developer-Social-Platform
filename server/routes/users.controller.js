@@ -16,7 +16,6 @@ const accessAndRefreshTokenGenerator = async (userId) => {
 
     const user = await User.findById(userId);
 
-
     const accessToken = await user.generateAccessToken();
     const refreshToken = await user.generateRefreshToken();
 
@@ -471,7 +470,6 @@ const googleAuth = async (req, res) => {
     });
 
     if (!user) {
-      console.log('New User found');
       user = await User.create({
         name: userRes.data.name,
         email: userRes.data.email,
@@ -482,7 +480,7 @@ const googleAuth = async (req, res) => {
     }
     const { refreshToken, accessToken } = await accessAndRefreshTokenGenerator(user._id);
 
-    createSendToken(user, 201, res, refreshToken, accessToken);
+    createSendToken(user, 201, res, accessToken, refreshToken);
 
   } catch (error) {
     console.log(error)
