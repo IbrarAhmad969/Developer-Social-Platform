@@ -429,7 +429,7 @@ const httpUpdateUserCoverImage = async (req, res) => {
 const createSendToken = async (user, statusCode, res, accessToken, refreshToken) => {
 
   const cookieOption = {
-    expires: new Date(Date.now() + ms(process.env.REFRESH_TOKEN_EXPIRY)),
+   // expires: new Date(Date.now() + ms(process.env.REFRESH_TOKEN_EXPIRY)),
     httpOnly: true,
     path: '/',
     secure: true,
